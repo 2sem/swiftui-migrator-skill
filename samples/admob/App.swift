@@ -1,7 +1,6 @@
-import GoogleMobileAds
 
 @main
-struct ProjectNameApp: App {
+struct ProjectNameApp: App { // Replace "MyApp" with your project name
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     @State private var isSplashDone = false

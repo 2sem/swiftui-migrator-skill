@@ -7,7 +7,17 @@ swiftuimigrator/
 ├── SKILL.md                            # Main 9-step migration workflow
 ├── .gitignore                          # Git ignore rules
 ├── guides/                             # Sub-guides for specialized features
-│   └── admob-migration.md             # AdMob migration guide (Step 8)
+│   ├── admob-migration.md             # AdMob migration guide (Step 8)
+│   └── samples/                       # Step-specific example implementations
+│       ├── step2-app-splash/          # Step 2 examples
+│       │   ├── App.swift              # Basic App entry point
+│       │   └── SplashScreen.swift     # Basic splash with .task
+│       ├── step3-data-migration/      # Step 3 examples
+│       │   ├── DataMigrationManager.swift      # Full migration manager
+│       │   ├── AppInitializer.swift            # Centralized initialization
+│       │   └── SplashScreenWithMigration.swift # Splash with progress
+│       └── step4-first-screen/        # Step 4 examples
+│           └── MainScreen.swift       # Comprehensive screen example
 └── samples/                            # Reference Swift implementations
     ├── general/                        # General SwiftUI migration samples
     │   ├── App.swift                  # SwiftUI app entry point
@@ -47,9 +57,25 @@ swiftuimigrator/
 - Per-screen ad integration
 - Originally the old SKILL.md content
 
+### Step-Specific Sample Files (guides/samples/)
+
+Progressive examples for each workflow step:
+
+**Step 2 (guides/samples/step2-app-splash/)**:
+- App.swift - Minimal App entry point with splash
+- SplashScreen.swift - Basic splash using .task for initialization
+
+**Step 3 (guides/samples/step3-data-migration/)**:
+- DataMigrationManager.swift - Full Core Data → Swift Data migration
+- AppInitializer.swift - Centralized initialization manager
+- SplashScreenWithMigration.swift - Splash with progress tracking
+
+**Step 4 (guides/samples/step4-first-screen/)**:
+- MainScreen.swift - Comprehensive example with all common patterns
+
 ### Sample Files (samples/general/)
 
-General SwiftUI migration patterns:
+General SwiftUI migration patterns (standalone reference files):
 
 1. **App.swift**
    - SwiftUI @main entry point

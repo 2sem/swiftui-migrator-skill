@@ -31,32 +31,24 @@ struct SplashScreen: View {
         } message: {
             Text(errorMessage)
         }
-        .onAppear {
-            Task {
-                await performInitialization()
-            }
+        .task {
+            await startMigrationProcess()
         }
     }
 
-    private func performInitialization() async {
-        do {
-            loadingMessage = "Initializing..."
-
-            // Add your initialization here
-            // Example: try await AppInitializer.initialize()
-
-            // Simulate loading for demo
-            try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
-
-            loadingMessage = "Ready!"
-            try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
-
-            withAnimation {
-                isDone = true
+    private func startMigrationProcess() {
+        Task {
+            defer {
+                withAnimation(.easeInOut(duration: 0.5)) {
+                    isDone = true
+                }
             }
-        } catch {
-            errorMessage = error.localizedDescription
-            showError = true
+            
+            // For Swift Data Migration Step
+            guard await migrationManager.checkAndMigrateIfNeeded(modelContext: modelContext) else {
+                // ...
+                return
+            }
         }
     }
 }

@@ -9,6 +9,7 @@
 - [ ] Validate that sample references point to correct files (samples/general/)
 - [ ] Confirm sub-guide references are correct (guides/admob-migration.md)
 - [ ] Check troubleshooting section is comprehensive
+- [ ] **Critical guideline present**: "When SwiftUI has issues → re-read UIKit implementation"
 
 ### After Modifying Sub-Guides (guides/*.md)
 - [ ] Ensure sub-guide clearly states when to use it (e.g., Step 8)
@@ -29,6 +30,13 @@
 - [ ] **File naming**: App.swift (NOT MyAppApp.swift or {ProjectName}App.swift)
 - [ ] **Struct naming**: Use generic placeholder `MyAppApp` (not specific project names)
 - [ ] **Screen naming**: Use meaningful names like `MainScreen.swift`, NOT `ContentView.swift`
+
+### After Modifying Step-Specific Samples (guides/samples/step*/)\n- [ ] All checks from general samples above
+- [ ] Ensure sample demonstrates the specific step it's in
+- [ ] Check that SKILL.md references the correct sample path
+- [ ] Verify sample shows progressive complexity (Step 2 simpler than Step 4)
+- [ ] Confirm sample includes comments explaining the pattern
+- [ ] Check that sample aligns with the step's verification checklist
 
 ### After Modifying AdMob Sample Code (samples/admob/)
 - [ ] All checks from general samples above
@@ -85,6 +93,32 @@ Based on SKILL.md "Common Pitfalls" section:
 - [ ] Update README.md project structure
 - [ ] Update project_structure.md memory
 - [ ] Ensure SKILL.md references it appropriately
+
+## Agent Debugging Guidelines
+
+### When Agent Encounters SwiftUI Implementation Issues
+
+**CRITICAL WORKFLOW**: If the SwiftUI version has problems:
+
+1. **Stop and re-read the UIKit implementation**
+   - Open the original ViewController file
+   - Look for what was missed in the SwiftUI migration
+   
+2. **Common things agents miss**:
+   - Initial state values (selectedIndex, default values)
+   - `viewDidLoad` initialization → Should be `.task` or `.onAppear`
+   - `viewWillAppear` logic → Should be `.onAppear` or `.task`
+   - Delegate methods → Need callbacks or `@Binding`
+   - Property observers (`didSet`, `willSet`) → Need `@Published` or manual tracking
+   - UIKit-specific configuration (navigationItem, tabBarItem)
+   
+3. **Example patterns to look for**:
+   - `tabBarController.selectedIndex = 1` → Need `@State var selectedTab = 1` and `TabView(selection: $selectedTab)`
+   - `navigationItem.title = "Foo"` → Need `.navigationTitle("Foo")`
+   - `tableView.delegate = self` → Need NavigationLink or .onTapGesture
+   - Timer setup in viewDidLoad → Need .onAppear or .task with Timer.publish
+   
+4. **Remember**: UIKit ViewControllers are kept during migration specifically for reference when debugging
 
 ## Verification After Major Changes
 

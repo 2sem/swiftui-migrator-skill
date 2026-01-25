@@ -57,7 +57,11 @@ This skill provides a battle-tested, 9-step workflow for migrating existing UIKi
 ├── README.md                          # This file
 ├── SKILL.md                           # Main 9-step workflow
 ├── guides/
-│   └── admob-migration.md            # AdMob-specific sub-guide
+│   ├── admob-migration.md            # AdMob-specific sub-guide
+│   └── samples/                      # Step-specific examples
+│       ├── step2-app-splash/         # Step 2: App entry point
+│       ├── step3-data-migration/     # Step 3: Data migration
+│       └── step4-first-screen/       # Step 4: First SwiftUI screen
 └── samples/
     ├── general/                       # General SwiftUI patterns
     │   ├── App.swift                 # SwiftUI app entry point
