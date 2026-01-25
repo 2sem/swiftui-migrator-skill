@@ -161,7 +161,18 @@ See [Troubleshooting Guide](guides/troubleshooting.md) for detailed strategies.
 > ```
 
 > **Note on `prepare` function signature:**
-> When implementing the `prepare` functions in `SwiftUIAdManager`, ensure the signature and the internal call are correct. A common mistake is to omit the `isTesting` parameter or use incorrect parameter names.
+> When implementing the `prepare` functions in `SwiftUIAdManager`, ensure the signature and the internal call are correct. This requires the `isTesting(unit:)` helper function to be defined first.
+>
+> **1. Define `isTesting` helper:**
+> This function checks if a given ad unit should be loaded in test mode. It relies on the `testUnits` array defined in `GADUnitName.swift`.
+> ```swift
+> func isTesting(unit: GADUnitName) -> Bool {
+>         return testUnits.contains(unit)
+>     }
+> ```
+>
+> **2. Implement `prepare` correctly:**
+> A common mistake is to omit the `isTesting` parameter or use incorrect parameter names.
 >
 > **Incorrect:**
 > ```swift
@@ -176,7 +187,7 @@ See [Troubleshooting Guide](guides/troubleshooting.md) for detailed strategies.
 >         gadManager?.prepare(interstitialUnit: unit, isTesting: self.isTesting(unit: unit), interval: interval)
 >     }
 > ```
-> Note the use of `gadManager`, the external parameter name `unit`, and the `isTesting` parameter in the call to `gadManager.prepare`.
+> Note the use of `gadManager`, the external parameter name `unit`, and the call to `self.isTesting(unit: unit)`.
 
 **Verification:** See [Verification Checklists](guides/verification-checklists.md#step-8-migrate-admob-after-all-features-implemented).
 

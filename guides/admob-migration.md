@@ -67,7 +67,7 @@ Refer to `LSDefaults.swift` in Samples for structure reference
     - Purpose: Create AdManager for SwiftUI 
     - Result: `SwiftUIAdManager` class exists
     - Create `Projects/App/Sources/Managers/SwiftUIAdManager.swift`
-    - Refer `samples/admob/SwiftUIAdManager.swift`
+    - Copy the content from `samples/admob/SwiftUIAdManager.swift`
     - **IMPORTANT**: Replace all `LSDefaults` references with your project's defaults class name
 
 2. **Conform SwiftUIAdManager to GADManagerDelegate**
@@ -88,7 +88,7 @@ After completing this section, verify:
     - Purpose: Define Enum for accessing Google Ad Units
     - Result: `GADUnitName.swift` file exists
     - Create `Projects/App/Sources/Extensions/Ad/GADUnitName.swift`
-    - Refer `samples/admob/GADUnitName.swift`
+    - Copy the content from `samples/admob/GADUnitName.swift`
     - Add GADUnitName `cases` from `GADUnitIdentifiers` of `Projects/App/Project.swift`
 
 ### Verification
@@ -100,7 +100,7 @@ After completing this section, verify:
 ## Migrate Admob Manager Intialization
 
 Open `Projects/App/Sources/App.swift`
-Refer `.claude/skills/swiftuimigrator/samples/admob/App.swift`
+Use the content from `.claude/skills/swiftuimigrator/samples/admob/App.swift` as a reference.
 
 **Important**: Replace `LSDefaults` in the sample with your project's actual defaults class name.
 
@@ -148,20 +148,20 @@ After completing this section, verify:
     - Result: The screen has `adManager` EnvironmentObject
     - Open the screen file `Projects/App/Sources/.../...Screen.swift`
     - Add EnvironmentObject `adManager`
-    - Refer `samples/admob/MigratedScreen.swift`
+    - Use the content from `samples/admob/MigratedScreen.swift` as a reference.
 
 4. **Add LaunchCount User Defaults Property**
     - Purpose: To request Ads permission and Ads since second Launch 
     - Result: The screen has `LaunchCount` AppStorage property
     - Open the screen file `Projects/App/Sources/.../...Screen.swift`
-    - Refer `samples/admob/MigratedScreen.swift`
+    - Use the content from `samples/admob/MigratedScreen.swift` as a reference.
 
 5. **Add a Method to wrap the behavior with Ads**
     - Purpose: Extract the code invoking Ads as a method
     - Result: The screen has `presentFullAdThen` method
     - Open the screen file `Projects/App/Sources/.../...Screen.swift`
     - Add Method `presentFullAdThen`
-    - Refer `samples/admob/MigratedScreen.swift`
+    - Use the content from `samples/admob/MigratedScreen.swift` as a reference.
 
 6. **Find the Code migrated from ViewController**
     - Purpose: To determine where to wrap with Ads
