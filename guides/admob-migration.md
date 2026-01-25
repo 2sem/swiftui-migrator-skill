@@ -184,6 +184,35 @@ After completing this section, verify:
 
 ## Common Pitfalls
 
+### `SwiftUIAdManager` Implementation Errors
+When implementing `SwiftUIAdManager.swift`, even when using the sample file, mistakes can be made. Here are some common errors and their corrections:
+
+- **`GADManager` Initialization:**
+    - **Incorrect:** `manager = GADManager<GADUnitName>(testingUnits: testUnits)`
+    - **Correct:** 
+        ```swift
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = windowScene.windows.first else { return }
+        let adManager = GADManager<GADUnitName>(window)
+        ```
+    - **Reason:** The `GADManager` must be initialized with a `UIWindow` instance, not with `testingUnits`.
+
+- **`prepare` Function:**
+    - **Incorrect:** `manager?.prepare(unit: interstitialUnit, interval: interval)`
+    - **Correct:** `gadManager?.prepare(interstitialUnit: unit, isTesting: self.isTesting(unit: unit), interval: interval)`
+    - **Reason:** You must use the correct `gadManager` variable, include the `isTesting` parameter, and use the correct external parameter name (`interstitialUnit`). This also requires the `isTesting(unit:)` helper function to be defined.
+
+- **`show` Function:**
+    - **Incorrect:** A simple completion handler like `{ success in ... }` is often wrong.
+    - **Correct:**
+        ```swift
+        gadManager.show(unit: unit, isTesting: self.isTesting(unit: unit),
+                        viewController: UIApplication.shared.keyRootViewController?.presentedViewController ) { unit, _,result  in
+            continuation.resume(returning: result)
+        }
+        ```
+    - **Reason:** The `show` method requires a `viewController` to present the ad on, and its completion handler returns multiple parameters (`unit, _, result`) that must be handled correctly.
+
 ### Project Generation
 - **Forgetting to regenerate**: After creating `SwiftUIAdManager.swift` or `GADUnitName.swift`, always run `mise x -- tuist generate --no-open`
 - **Build errors after file creation**: If you see "cannot find in scope" errors, regenerate the project
