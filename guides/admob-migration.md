@@ -132,46 +132,41 @@ After completing this section, verify:
 - [ ] AdManager is initialized and passed as environmentObject
 - [ ] App builds successfully with `tuist build`
 
-## Migrate Interstial Ad
+## Migrate Native Ad
 
-**Note**: While the screen uses `@AppStorage` properties, ensure the property names match those defined in your UserDefaults wrapper (e.g., `LaunchCount`, `LastFullAdShown`).
+**Note**: While the Uikit uses `XIB` or `storyboard`, SwiftUI uses only View.
 
-1. **Find Which ViewController and Button showing Full Ad**
-    - Find calling show method of sharedGADManager
-    - example: "sharedGADManager?.show(unit: .full)"
+1. **Find Which ViewController(TableViewController/CollectionViewController) showing Native Ad**
+    - Find defining @IBOutlet NativeAdView
+    - example: `@IBOutlet weak var nativeAdView: NativeAdView!`
 
 2. **Find Which SwiftUI Screen is migrated from the ViewController**
     - Find {Name}Screen if the view controller's name is {Name}ViewController
 
-3. **Add SwiftUIAdManager as EnvironmentObject**
-    - Purpose: Enable adManager in the screeen
-    - Result: The screen has `adManager` EnvironmentObject
-    - Open the screen file `Projects/App/Sources/.../...Screen.swift`
-    - Add EnvironmentObject `adManager`
-    - Use the content from `samples/admob/MigratedScreen.swift` as a reference.
+3. **Add MediaViewSwiftUIView**
+    - Purpose: Enable MediaView in NativeAdSwiftUIView, SwiftUI, Native Ad must use MediaView instead of Image(View)
+    - Result: `Extensions/Ad` has `MediaViewSwiftUIView.swift`
+    - Create `Projects/App/Sources/Extensions/Ad/MediaViewSwiftUIView.swift
+    - Use the content from `samples/admob/MediaViewSwiftUIView.swift` as a reference.
 
-4. **Add LaunchCount User Defaults Property**
-    - Purpose: To request Ads permission and Ads since second Launch 
-    - Result: The screen has `LaunchCount` AppStorage property
-    - Open the screen file `Projects/App/Sources/.../...Screen.swift`
-    - Use the content from `samples/admob/MigratedScreen.swift` as a reference.
+3. **Add NativeAdSwiftUIView**
+    - Purpose: Enable NativeAd in SwiftUI
+    - Result: `Extensions/Ad` has `NativeAdSwiftUIView.swift`
+    - Create `Projects/App/Sources/Extensions/Ad/NativeAdSwiftUIView.swift
+    - Use the content from `samples/admob/NativeAdSwiftUIView.swift` as a reference.
 
-5. **Add a Method to wrap the behavior with Ads**
-    - Purpose: Extract the code invoking Ads as a method
-    - Result: The screen has `presentFullAdThen` method
-    - Open the screen file `Projects/App/Sources/.../...Screen.swift`
-    - Add Method `presentFullAdThen`
-    - Use the content from `samples/admob/MigratedScreen.swift` as a reference.
+4. **Add NativeAdRowView**
+    - Purpose: To Show Native Ad in SwiftUI conditionlly
+    - Result: `Views` has `NativeAdRowView.swift`
+    - Create `Projects/App/Sources/Views/NativeAdRowView.swift`
+    - Use the content from `samples/admob/NativeAdRowView.swift` as a reference.
 
-6. **Find the Code migrated from ViewController**
-    - Purpose: To determine where to wrap with Ads
-    - Find Which Button or Gesture migrated from the view controller
-    - examples: MainViewController.onDonate to MainScreen's Button("Donate") {}
-
-7. **Wrap the code with presentFullAdThen**
-    - Purpose: To show Ads before the action
-    - Result: The code wrapped with `presentFullAdThen`
-    - Wrap the code found in Step 6 with `presentFullAdThen`
+5. **Add NativeAdRowView to MigratedScreen**
+    - Purpose: To show Native Ad in the ListScreen
+    - Result: The ListScreen has `NativeAdRowView`
+    - Open the screen file `Projects/App/Sources/.../...ListScreen.swift`
+    - Add `NativeAdRowView(index: index, interval: interval)` in `Foreach`
+    - Use the content from `samples/admob/MigratedScreen-NativeAd.swift` as a reference.
 
 ### Verification
 After completing this section, verify:
