@@ -166,6 +166,7 @@ After completing this section, verify:
     - Result: The ListScreen has `NativeAdRowView`
     - Open the screen file `Projects/App/Sources/.../...ListScreen.swift`
     - Add `NativeAdRowView(index: index, interval: interval)` in `Foreach`
+    - Make the design to make seamless with the Row view in the ListScreen
     - Use the content from `samples/admob/MigratedScreen-NativeAd.swift` as a reference.
 
 ### Verification
