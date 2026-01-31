@@ -186,6 +186,23 @@ After completing this section, verify:
 - [ ] Ad shows only when `launchCount > 1`
 - [ ] App runs and ads display correctly
 
+## Cleanup AppDelegate
+
+Once the new `SwiftUIAdManager` is implemented and you have verified that ads are working correctly with the SwiftUI implementation, you can clean up the old AdMob code from your `AppDelegate`.
+
+**Tasks:**
+
+1.  **Open `Projects/App/Sources/AppDelegate.swift`**.
+2.  **Remove `sharedGADManager`**: Delete the static `shared` property for the `GADManager`.
+3.  **Remove `GADManagerDelegate` conformance**: Remove `GADManagerDelegate` from the class declaration.
+4.  **Remove delegate methods**: Delete all the `GADManagerDelegate` methods that you previously copied to `SwiftUIAdManager`.
+
+**Verification:**
+
+-   [ ] The app compiles without errors.
+-   [ ] Ads continue to work as expected.
+-   [ ] A search for `sharedGADManager` in the project should yield no results (or only results in files that are pending deletion).
+
 ## Common Pitfalls
 
 ### `SwiftUIAdManager` Implementation Errors
