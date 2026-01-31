@@ -82,6 +82,7 @@ Refer to `LSDefaults.swift` in Samples for structure reference
     - Result: `SwiftUIAdManager` is conformed to `GADManagerDelegate` and implemented all methods from `Projects/App/Sources/AppDelegate.swift`
     - Open `Projects/App/Sources/Managers/SwiftUIAdManager.swift`
     - Add Methods to implement `GADManagerDelegate` from `Projects/App/Sources/AppDelegate.swift`
+    - **Note**: When copying the methods from `AppDelegate`, you will likely need to update the `prepare` method call to match the `GADManager` 1.3.8+ signature. The `isTest` parameter is renamed to `isTesting`. See the "Common Pitfalls" section for a detailed example of the correct implementation.
 
 ### Verification
 After completing this section, verify:
