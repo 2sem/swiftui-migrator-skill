@@ -28,6 +28,16 @@ This workflow provides a 9-step, incremental approach to migrate a UIKit app to 
 
 ## Important Guidelines
 
+### File Organization
+
+To maintain a clean and predictable project structure, please adhere to the following file location guidelines:
+
+-   **Screens:** All new SwiftUI views that represent a full screen (i.e., they replace a `UIViewController`) should be placed in the `Projects/App/Sources/Screens/` directory. For example, `MainViewController.swift` would be migrated to `Projects/App/Sources/Screens/MainScreen.swift`.
+
+-   **Views:** Smaller, reusable SwiftUI components should be placed in a `Projects/App/Sources/Views/` directory.
+
+-   **Do not use generic names:** Avoid default names like `ContentView.swift`. Name your files descriptively.
+
 ### When you encounter issues with the SwiftUI implementation:
 
 **CRITICAL**: If the SwiftUI version has a problem you can't solve, **go back and re-read the original UIKit ViewController implementation.**
@@ -66,6 +76,7 @@ See [Troubleshooting Guide](guides/troubleshooting.md) for detailed strategies.
 **Tasks:**
 1.  Create `Projects/App/Sources/App.swift` with a `WindowGroup` containing `SplashScreen`. (Sample: `guides/samples/step2-app-splash/App.swift`)
 2.  Create an empty `Projects/App/Sources/Screens/SplashScreen.swift`. (Sample: `guides/samples/step2-app-splash/SplashScreen.swift`)
+    > **Important**: The file must be created at the exact path `Projects/App/Sources/Screens/SplashScreen.swift`. This ensures consistency in the project structure.
 3.  In `AppDelegate.swift`, remove the `@UIApplicationMain` or `@main` attribute and all `self.window` management code. **Do not delete the file.**
 4.  Run `mise x -- tuist generate --no-open && tuist build`.
 
