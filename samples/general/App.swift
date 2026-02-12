@@ -11,6 +11,7 @@ struct ProjectNameApp: App {  // Replace "ProjectName" with your project name
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @State private var isSplashDone = false
     // // For App Life Cycle Migration Step
+    @State private var isLaunched = false
     @State private var isFromBackground = false
 
     // For Swift Data Migration Step
@@ -57,34 +58,35 @@ struct ProjectNameApp: App {  // Replace "ProjectName" with your project name
         print("scene changed old[\(oldPhase)] new[\(newPhase)]")
         
         switch newPhase {
-            case .active:
-                if isFromBackground {
-                    handleAppDidBecomeActive()
-                }
-                
-                isFromBackground = false
-            case .inactive:
-                // from applicationWillResignActive
-                break
-            case .background:
-                // from applicationDidEnterBackground
-                isFromBackground = true
-                break
-            @unknown default:
-                break
+        case .active:
+            handleAppDidBecomeActive()
+        case .inactive:
+            // from applicationWillResignActive
+            break
+        case .background:
+            // from applicationDidEnterBackground
+            isFromBackground = true
+            break
+        @unknown default:
+            break
         }
     }
     
     // For App Life Cycle Migration Step from applicationWillEnterForeground
     private func handleAppDidBecomeActive() {
         print("scene become active")
-        Task {
-            defer {
-                LSDefaults.increaseLaunchCount()
+
+        if !isLaunched { // First launch
+            isLaunched = true
+            LSDefaults.increaseLaunchCount()
+        } else if isFromBackground { // Returning from background
+            Task {
+                await adManager.requestAppTrackingIfNeed()
+                await adManager.show(unit: .launch)
             }
-            
-            await adManager.requestAppTrackingIfNeed()
-            await adManager.show(unit: .launch)
         }
+        // If it's just returning from inactive (system alert), do nothing.
+
+        isFromBackground = false // Reset the flag here.
     }
 }
