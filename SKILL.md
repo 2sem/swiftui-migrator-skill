@@ -62,9 +62,10 @@ See [Troubleshooting Guide](guides/troubleshooting.md) for detailed strategies.
 **Purpose:** Enable SwiftUI support in your Tuist project.
 
 **Tasks:**
-1.  Open `Projects/App/Project.swift`.
-2.  Set the deployment target to `iOS 18.0` or higher.
-3.  Run `tuist generate --no-open` to apply changes.
+1.  Locate all `Project.swift` files within the `Projects/` directory (e.g., for the main app, features, core modules).
+2.  In **each** `Project.swift` file, find the `deploymentTarget` property.
+3.  Update the version for the `deploymentTarget` to be at least `iOS 18.0`. This must be done for **all modules** to ensure compatibility.
+4.  Run `tuist generate --no-open` to apply the changes across the entire project.
 
 **Verification:** See [Verification Checklists](guides/verification-checklists.md#step-1-update-tuist-for-swiftui).
 
