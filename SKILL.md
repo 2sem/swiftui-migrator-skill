@@ -80,6 +80,12 @@ See [Troubleshooting Guide](guides/troubleshooting.md) for detailed strategies.
 3.  In `AppDelegate.swift`, remove the `@UIApplicationMain` or `@main` attribute and all `self.window` management code. **Do not delete the file.**
 4.  Run `mise x -- tuist generate --no-open && tuist build`.
 
+**Seamless Transition:**
+To prevent a visual "jump" between the system launch screen and your SwiftUI splash screen, they must be visually identical.
+
+1.  **Inspect Launch Screen:** Check `Info.plist` for `UILaunchScreen` or look at `LaunchScreen.storyboard` to find the background color and image name.
+2.  **Match in SwiftUI:** In `SplashScreen.swift`, use the exact same background color and image asset. Ensure the image size and position are identical to the launch screen's layout. This creates a smooth, professional loading experience.
+
 **Verification:** See [Verification Checklists](guides/verification-checklists.md#step-2-add-app-and-empty-splashscreen).
 
 ---
