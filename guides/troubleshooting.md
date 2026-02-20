@@ -104,19 +104,46 @@ This guide provides solutions to common issues encountered during a UIKit to Swi
 
 ---
 
-## Step 5: Verify First Screen Appears After Splash
+#$1
+---
 
-### Splash screen doesn't disappear
-- Check that the `isDone` binding between your splash screen and `App` struct is working correctly.
-- Verify that your initialization/migration process completes successfully.
-- Look for any errors in the Xcode console that might indicate an issue.
+## Build & Compilation Errors
 
-### Black screen after splash
-- Verify that your main screen view is correctly added to the view hierarchy (e.g., in the `ZStack`) after the splash screen is done.
-- Check the conditional logic in your `App` struct that controls the transition.
-- Ensure the state variable (`isSplashDone`) correctly changes to `true`.
+### "Multiple commands produce ...+CoreDataClass.swift" Error
+- **Cause**: This Xcode build error occurs when multiple source files with the same name are included in the same target. It's common with Core Data when Xcode auto-generates `NSManagedObject` subclasses (`YourEntity+CoreDataClass.swift` and `YourEntity+CoreDataProperties.swift`) and you also have manually created files with the same purpose or the project file is not configured correctly.
+- **Solution**: The fix is to exclude the auto-generated `+CoreDataClass.swift` files from your target's `sources` in your `Project.swift` file. By using a glob pattern, you can exclude all such files from compilation, resolving the conflict.
 
-### App crashes after splash
-- Double-check your initialization code for any potential runtime errors.
-- Review `AppDelegate` for any remaining code that might conflict with the SwiftUI lifecycle.
-- Verify that all necessary modules are imported in your new SwiftUI views.
+- **Example `Project.swift` modification**:
+  If your `sources` are defined as a simple array, you need to change it to use `.glob` to be able to use the `excluding` parameter.
+
+  **Before:**
+  ```swift
+  // In Project.swift
+  .target(
+      name: "App",
+      // ... other properties
+      sources: ["Sources/**"],
+      resources: [
+          .glob(pattern: "Resources/**")
+      ]
+  )
+  ```
+
+  **After:**
+  ```swift
+  // In Project.swift
+  .target(
+      name: "App",
+      // ... other properties
+      sources: [
+          .glob(
+              "Sources/**",
+              excluding: "**/*+CoreDataClass.swift"
+          )
+      ],
+      resources: [
+          .glob(pattern: "Resources/**")
+      ]
+  )
+  ```
+  This change tells Tuist to include all source files *except for* those ending in `+CoreDataClass.swift`, which resolves the "multiple commands" error.

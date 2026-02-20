@@ -1,6 +1,6 @@
 ---
 name: swiftuimigrator
-description: "A guide for incrementally migrating UIKit apps to SwiftUI, ensuring the app remains functional throughout the process. Covers converting ViewControllers, migrating data, and adopting modern SwiftUI patterns."
+description: "A guide for incrementally migrating UIKit apps to SwiftUI, including AdMob integration. It ensures the app remains functional throughout the process and covers converting ViewControllers, migrating data, handling AdMob ads, and adopting modern SwiftUI patterns."
 ---
 
 # SwiftUI Migration Workflow
