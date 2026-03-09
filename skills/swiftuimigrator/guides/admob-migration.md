@@ -13,7 +13,7 @@
 This workflow guides the migration of a feature from UIKit to SwiftUI, focusing on AdMob integration.
 
 ## Paths
-- **Samples**: .claude/skills/swiftuimigrator/samples/admob/
+- **Samples**: `skills/swiftuimigrator/samples/admob/` in this repository, or `samples/admob/` relative to the installed skill root.
 
 ## Rules
 - **Avoid Duplication**: Before performing any modification or addition, always check if code is already same to the result. If it exists or is already in the desired state, skip the corresponding step and proceed to the next.
@@ -108,7 +108,7 @@ After completing this section, verify:
 ## Migrate Admob Manager Intialization
 
 Open `Projects/App/Sources/App.swift`
-Use the content from `.claude/skills/swiftuimigrator/samples/admob/App.swift` as a reference.
+Use `samples/admob/App.swift` as a reference.
 
 **Important**: Replace `LSDefaults` in the sample with your project's actual defaults class name.
 

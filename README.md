@@ -2,6 +2,14 @@
 
 A Claude Code skill that guides incremental migration from UIKit to SwiftUI, screen by screen, while keeping your app functional throughout the process.
 
+## Install
+
+```bash
+npx skills add 2sem/swiftui-migrator-skill
+```
+
+The installable skill lives in `skills/swiftuimigrator/`, which matches the repository layout expected by the Vercel `skills` CLI.
+
 ## Overview
 
 This skill provides a battle-tested, 9-step workflow for migrating existing UIKit apps to SwiftUI. The key principle: **migrate incrementally, keeping UIKit and SwiftUI running in parallel until everything works**.
@@ -35,45 +43,41 @@ This skill provides a battle-tested, 9-step workflow for migrating existing UIKi
 
 ## Quick Start
 
-1. **Activate the skill** in Claude Code:
+1. **Install the skill**:
+   ```bash
+   npx skills add 2sem/swiftui-migrator-skill
+   ```
+
+2. **Activate the skill** in Claude Code:
    ```
    Use the swiftuimigrator skill to migrate my UIKit app to SwiftUI
    ```
 
-2. **Provide context**: Let Claude know:
+3. **Provide context**: Let Claude know:
    - Which screen you're starting with
    - Your app's current structure
    - Any special features (ads, data persistence, etc.)
 
-3. **Follow the workflow**: The skill guides you through each step with:
+4. **Follow the workflow**: The skill guides you through each step with:
    - Clear tasks and verification checkpoints
    - Code samples for common patterns
    - Troubleshooting for common pitfalls
 
 ## Project Structure
 
-```
-.claude/skills/swiftuimigrator/
-├── README.md                          # This file
-├── SKILL.md                           # Main 9-step workflow
-├── guides/
-│   ├── admob-migration.md            # AdMob-specific sub-guide
-│   └── samples/                      # Step-specific examples
-│       ├── step2-app-splash/         # Step 2: App entry point
-│       ├── step3-data-migration/     # Step 3: Data migration
-│       └── step4-first-screen/       # Step 4: First SwiftUI screen
-└── samples/
-    ├── general/                       # General SwiftUI patterns
-    │   ├── App.swift                 # SwiftUI app entry point
-    │   ├── SplashScreen.swift        # Loading screen example
-    │   ├── MainScreen.swift          # Migrated screen example
-    │   └── DataMigrationManager.swift # Core Data → Swift Data migration
-    └── admob/                         # AdMob-specific samples
-        ├── App.swift                 # App with AdMob initialization
-        ├── SwiftUIAdManager.swift    # Ad manager for SwiftUI
-        ├── GADUnitName.swift         # Type-safe ad units
-        ├── LSDefaults.swift          # UserDefaults wrapper
-        └── MigratedScreen.swift      # Screen with ad integration
+```text
+swiftui-migrator-skill/
+├── README.md
+├── AGENTS.md
+└── skills/
+    └── swiftuimigrator/
+        ├── SKILL.md                  # Main 9-step workflow
+        ├── guides/
+        │   ├── admob-migration.md    # AdMob-specific sub-guide
+        │   └── samples/              # Step-specific examples
+        └── samples/
+            ├── general/              # General SwiftUI patterns
+            └── admob/                # AdMob-specific samples
 ```
 
 ## Key Features
@@ -116,7 +120,7 @@ All samples demonstrate:
 - Modernizing state management
 
 ### Feature-Specific Migration
-- AdMob integration (see `guides/admob-migration.md`)
+- AdMob integration (see `skills/swiftuimigrator/guides/admob-migration.md`)
 - Data persistence patterns
 - Network layer adaptation
 - Third-party SDK integration
@@ -149,7 +153,7 @@ The skill provides step-by-step guidance:
 ## Sub-Guides
 
 ### AdMob Migration
-**Location**: `guides/admob-migration.md`
+**Location**: `skills/swiftuimigrator/guides/admob-migration.md`
 **When to use**: Step 8, after all screens/features are migrated
 **What it covers**:
 - UserDefaults setup for ad tracking
@@ -209,7 +213,7 @@ This skill is designed to be extended:
 
 ## Troubleshooting
 
-See `SKILL.md` for detailed troubleshooting, including:
+See `skills/swiftuimigrator/SKILL.md` for detailed troubleshooting, including:
 
 - Project generation issues
 - State management problems
@@ -225,9 +229,9 @@ This skill is part of your Claude Code workspace and follows your project's lice
 
 ## Getting Help
 
-1. Check `SKILL.md` for detailed step-by-step instructions
-2. Review `guides/` for specialized feature migration
-3. Examine `samples/` for reference implementations
+1. Check `skills/swiftuimigrator/SKILL.md` for detailed step-by-step instructions
+2. Review `skills/swiftuimigrator/guides/` for specialized feature migration
+3. Examine `skills/swiftuimigrator/samples/` for reference implementations
 4. Ask Claude Code for clarification on specific steps
 
 **Ready to start?** Activate the skill and follow the 9-step workflow! 🚀
