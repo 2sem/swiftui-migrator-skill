@@ -12,16 +12,16 @@ The installable skill lives in `skills/swiftuimigrator/`, which matches the repo
 
 ## Overview
 
-This skill provides a battle-tested, 9-step workflow for migrating existing UIKit apps to SwiftUI. The key principle: **migrate incrementally, keeping UIKit and SwiftUI running in parallel until everything works**.
+This repository now uses an orchestrator-plus-subskills model. `swiftuimigrator` remains the main entry point, and it routes work to focused subskills for setup, startup migration, screens, AdMob, and cleanup. The key principle remains the same: **migrate incrementally, keeping UIKit and SwiftUI running in parallel until everything works**.
 
-## What It Does
+## Skill Model
 
-- **Guides Full Migration**: Complete UIKit → SwiftUI migration workflow
-- **Screen-by-Screen**: Incremental approach, one screen at a time
-- **Keeps UIKit Running**: Maintains ViewControllers during migration
-- **Includes Sub-Guides**: Specialized guides (AdMob, etc.) for specific features
-- **Sample Code**: Reference implementations for common patterns
-- **Verification Steps**: Built-in checkpoints after each step
+- **`swiftuimigrator`**: Orchestrator that detects the current migration stage and routes to the right specialized skill
+- **`swiftuimigrator-project-setup`**: Tuist updates, `App.swift`, `SplashScreen`, and entry-point transition
+- **`swiftuimigrator-data-migration`**: Startup initialization, migration, loading flow, and splash progress
+- **`swiftuimigrator-screens`**: Screen-by-screen conversion, navigation rewiring, and UIKit bridge patterns
+- **`swiftuimigrator-admob`**: AdMob-specific migration after the core app is stable
+- **`swiftuimigrator-cleanup`**: Final deletion of legacy UIKit scaffolding after verification
 
 ## Migration Workflow (9 Steps)
 
@@ -48,7 +48,7 @@ This skill provides a battle-tested, 9-step workflow for migrating existing UIKi
    npx skills add 2sem/swiftui-migrator-skill
    ```
 
-2. **Activate the skill** in Claude Code:
+2. **Start with the orchestrator**:
    ```
    Use the swiftuimigrator skill to migrate my UIKit app to SwiftUI
    ```
@@ -58,10 +58,12 @@ This skill provides a battle-tested, 9-step workflow for migrating existing UIKi
    - Your app's current structure
    - Any special features (ads, data persistence, etc.)
 
-4. **Follow the workflow**: The skill guides you through each step with:
-   - Clear tasks and verification checkpoints
-   - Code samples for common patterns
-   - Troubleshooting for common pitfalls
+4. **Let the orchestrator route the work**:
+   - project shell setup
+   - startup/data migration
+   - screen migration
+   - AdMob
+   - cleanup
 
 ## Project Structure
 
@@ -70,15 +72,30 @@ swiftui-migrator-skill/
 ├── README.md
 ├── AGENTS.md
 └── skills/
-    └── swiftuimigrator/
-        ├── SKILL.md                  # Main 9-step workflow
-        ├── guides/
-        │   ├── admob-migration.md    # AdMob-specific sub-guide
-        │   └── samples/              # Step-specific examples
-        └── samples/
-            ├── general/              # General SwiftUI patterns
-            └── admob/                # AdMob-specific samples
+    ├── swiftuimigrator/
+    │   ├── SKILL.md                  # Orchestrator
+    │   ├── guides/                   # Shared references
+    │   └── samples/                  # Shared samples
+    ├── swiftuimigrator-project-setup/
+    │   └── SKILL.md
+    ├── swiftuimigrator-data-migration/
+    │   └── SKILL.md
+    ├── swiftuimigrator-screens/
+    │   └── SKILL.md
+    ├── swiftuimigrator-admob/
+    │   └── SKILL.md
+    └── swiftuimigrator-cleanup/
+        └── SKILL.md
 ```
+
+## When to Use Which Skill
+
+- Start with `swiftuimigrator` unless you already know the exact migration stage.
+- Use `swiftuimigrator-project-setup` for `App.swift`, `SplashScreen`, and Tuist shell work.
+- Use `swiftuimigrator-data-migration` for startup loading, migration, and `AppInitializer` logic.
+- Use `swiftuimigrator-screens` for repeated `ViewController` to `Screen` conversion work.
+- Use `swiftuimigrator-admob` only after the core SwiftUI app is already stable.
+- Use `swiftuimigrator-cleanup` only after the migration is fully verified.
 
 ## Key Features
 
@@ -127,14 +144,7 @@ All samples demonstrate:
 
 ## How It Works
 
-The skill provides step-by-step guidance:
-
-1. **Analyzes your UIKit code** - Understands current structure
-2. **Plans migration approach** - Identifies screens and dependencies
-3. **Generates SwiftUI equivalents** - Creates Views from ViewControllers
-4. **Provides verification steps** - Ensures each step works before moving on
-5. **Handles edge cases** - UIViewRepresentable when needed
-6. **Guides cleanup** - Removes UIKit code only after completion
+The orchestrator keeps the public entry point stable, but hands stage-specific work to smaller skills. Shared guides and samples stay under `skills/swiftuimigrator/` so subskills can reference the same material without duplicating assets.
 
 ## Verification Strategy
 
@@ -229,7 +239,7 @@ This skill is part of your Claude Code workspace and follows your project's lice
 
 ## Getting Help
 
-1. Check `skills/swiftuimigrator/SKILL.md` for detailed step-by-step instructions
+1. Check `skills/swiftuimigrator/SKILL.md` for stage detection and routing
 2. Review `skills/swiftuimigrator/guides/` for specialized feature migration
 3. Examine `skills/swiftuimigrator/samples/` for reference implementations
 4. Ask Claude Code for clarification on specific steps
