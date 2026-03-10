@@ -1,0 +1,1 @@
+User preference for this repository: when committing and pushing my work, include local changes under `.serena/` together with the rest of the repo changes by default, instead of leaving `.serena` changes out as unrelated. Only exclude `.serena` changes if the user explicitly asks to separate them or if including them would be unsafe/destructive.
