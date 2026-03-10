@@ -1,178 +1,107 @@
 ---
 name: swiftuimigrator
-description: "A guide for incrementally migrating UIKit apps to SwiftUI, including AdMob integration. It ensures the app remains functional throughout the process and covers converting ViewControllers, migrating data, handling AdMob ads, and adopting modern SwiftUI patterns."
+description: Use when planning or coordinating an incremental UIKit-to-SwiftUI migration and you need to determine which migration stage or specialized subskill should run next.
 ---
 
-# SwiftUI Migration Workflow
+# SwiftUI Migrator
 
-This workflow provides a 9-step, incremental approach to migrate a UIKit app to SwiftUI. The core principle is to **keep all UIKit ViewControllers running until the migration is fully complete and verified.**
+## Overview
 
-**Prerequisites**:
-- Existing UIKit project using Tuist
-- Xcode 15+
-- Basic SwiftUI knowledge
+This is the orchestrator for incremental UIKit-to-SwiftUI migration. Use it to detect the current migration stage, apply global safety rules, and route work to the correct specialized subskill.
 
-## Migration Steps Overview
+Core principle: **keep UIKit ViewControllers running until the SwiftUI migration is fully complete and verified.**
 
-1.  **Update Tuist:** Configure the project for SwiftUI.
-2.  **Create SwiftUI App Entry Point:** Add a SwiftUI `App` and an empty `SplashScreen`.
-3.  **Implement Data Migration:** Move data loading and migration logic to the `SplashScreen`.
-4.  **Migrate First Screen:** Convert the root `ViewController` to a SwiftUI `View`.
-5.  **Verify First Screen:** Ensure the new screen appears correctly after the splash screen.
-6.  **Implement Features Incrementally:** Port features from the `ViewController` to the SwiftUI `View` one by one.
-7.  **Repeat for Other Screens:** Repeat steps 4-6 for all remaining screens.
-8.  **Migrate AdMob:** Integrate AdMob after all other features are working.
-9.  **Cleanup:** Remove old UIKit code once the migration is complete.
+## Migration Stages
 
----
+1. **Project setup**
+   Route to `swiftuimigrator-project-setup`
+2. **Data migration and startup loading**
+   Route to `swiftuimigrator-data-migration`
+3. **Screen-by-screen migration**
+   Route to `swiftuimigrator-screens`
+4. **AdMob migration**
+   Route to `swiftuimigrator-admob`
+5. **Final cleanup**
+   Route to `swiftuimigrator-cleanup`
 
-## Important Guidelines
+## Stage Detection
+
+### Use `swiftuimigrator-project-setup` when:
+
+- The project does not yet have a SwiftUI `App` entry point
+- Tuist deployment targets still need SwiftUI-compatible updates
+- `SplashScreen.swift` and the app shell are not in place
+- `AppDelegate` still owns launch-time window setup
+
+### Use `swiftuimigrator-data-migration` when:
+
+- Startup logic still lives in `AppDelegate`
+- Data migration or initialization must move into the SwiftUI startup path
+- `SplashScreen` should show migration or loading progress
+- SwiftData container setup is part of the migration
+
+### Use `swiftuimigrator-screens` when:
+
+- The app shell is stable enough to begin screen conversion
+- A `ViewController` needs to become a SwiftUI screen
+- Features need to move incrementally from UIKit into SwiftUI
+- Navigation must be rewritten with SwiftUI patterns
+- A complex UIKit view may need a temporary `UIViewRepresentable` bridge
+
+### Use `swiftuimigrator-admob` when:
+
+- Core screen migration is already working
+- The remaining work is specific to Google AdMob
+- `SwiftUIAdManager`, ad-unit migration, or native ad views still need SwiftUI equivalents
+
+### Use `swiftuimigrator-cleanup` when:
+
+- All required screens and features are already migrated
+- The remaining work is deleting legacy UIKit files and entry logic
+- Final verification has already passed and cleanup is now safe
+
+## Routing Map
+
+- Missing SwiftUI app shell: `swiftuimigrator-project-setup`
+- Startup initialization or data migration work: `swiftuimigrator-data-migration`
+- Root or secondary screen migration: `swiftuimigrator-screens`
+- AdMob after the app is otherwise stable: `swiftuimigrator-admob`
+- Final removal of UIKit migration scaffolding: `swiftuimigrator-cleanup`
+
+## Global Rules
 
 ### File Organization
 
-To maintain a clean and predictable project structure, please adhere to the following file location guidelines:
+- **Screens:** New SwiftUI screens that replace `UIViewController` classes belong in `Projects/App/Sources/Screens/`.
+- **Views:** Smaller reusable SwiftUI components belong in `Projects/App/Sources/Views/`.
+- **Naming:** Do not use generic names like `ContentView.swift`. Use descriptive names such as `MainScreen.swift`.
 
--   **Screens:** All new SwiftUI views that represent a full screen (i.e., they replace a `UIViewController`) should be placed in the `Projects/App/Sources/Screens/` directory. For example, `MainViewController.swift` would be migrated to `Projects/App/Sources/Screens/MainScreen.swift`.
+### Migration Safety
 
--   **Views:** Smaller, reusable SwiftUI components should be placed in a `Projects/App/Sources/Views/` directory.
+- Migrate incrementally, one stage and one screen at a time.
+- Keep all UIKit `ViewController` implementations until the full migration is verified.
+- Do not run AdMob migration before setup, startup flow, and screen migration are stable.
+- Do not start cleanup until the SwiftUI app is fully verified end to end.
 
--   **Do not use generic names:** Avoid default names like `ContentView.swift`. Name your files descriptively.
+### Debugging Principle
 
-### When you encounter issues with the SwiftUI implementation:
+If the SwiftUI version has a problem you cannot solve, **go back and re-read the original UIKit implementation**.
 
-**CRITICAL**: If the SwiftUI version has a problem you can't solve, **go back and re-read the original UIKit ViewController implementation.**
+Compare:
+- initial state values
+- lifecycle setup
+- delegate behavior
+- configuration and property observers
 
-The UIKit ViewControllers are kept throughout migration specifically so you can reference them when issues arise. When debugging:
+Example:
+- If `TabView` does not open on the correct tab, check whether the UIKit implementation set `selectedIndex` and mirror that state explicitly in SwiftUI.
 
-1. **Re-examine the UIKit code**: Open the original `ViewController` and look for what you might have missed
-2. **Compare implementations**: What did UIKit have that's missing in SwiftUI? (state, delegates, lifecycle, configuration)
-3. **Common missed items**: 
-   - Initial state values (e.g., `tabBarController.selectedIndex = 1` → need `@State var selectedTab = 1`)
-   - Lifecycle initialization (`viewDidLoad` → `.task` or `.onAppear`)
-   - Delegate methods → Callbacks or `@Binding`
-   - Property observers → `@Published` or manual tracking
+For detailed troubleshooting strategies, see `guides/troubleshooting.md`.
 
-**Example**: If TabView doesn't show the correct tab, check if UITabBarController had `selectedIndex` set - you'll need `TabView(selection: $selectedTab)` with `.tag()` modifiers.
+## Recommended Flow
 
-See [Troubleshooting Guide](guides/troubleshooting.md) for detailed strategies.
-
----
-
-## Step 1: Update Tuist for SwiftUI
-**Purpose:** Enable SwiftUI support in your Tuist project.
-
-**Tasks:**
-1.  Locate all `Project.swift` files within the `Projects/` directory (e.g., for the main app, features, core modules).
-2.  In **each** `Project.swift` file, find the `deploymentTarget` property.
-3.  Update the version for the `deploymentTarget` to be at least `iOS 18.0`. This must be done for **all modules** to ensure compatibility.
-4.  Run `tuist generate --no-open` to apply the changes across the entire project.
-
-**Verification:** See [Verification Checklists](guides/verification-checklists.md#step-1-update-tuist-for-swiftui).
-
----
-
-## Step 2: Add App and Empty SplashScreen
-**Purpose:** Create the SwiftUI app entry point and a splash screen for initialization.
-
-**Tasks:**
-1.  Create `Projects/App/Sources/App.swift` with a `WindowGroup` containing `SplashScreen`. (Sample: `guides/samples/step2-app-splash/App.swift`)
-2.  Create an empty `Projects/App/Sources/Screens/SplashScreen.swift`. (Sample: `guides/samples/step2-app-splash/SplashScreen.swift`)
-    > **Important**: The file must be created at the exact path `Projects/App/Sources/Screens/SplashScreen.swift`. This ensures consistency in the project structure.
-3.  In `AppDelegate.swift`, remove the `@UIApplicationMain` or `@main` attribute and all `self.window` management code. **Do not delete the file.**
-4.  Run `mise x -- tuist generate --no-open && tuist build`.
-
-**Seamless Transition:**
-To prevent a visual "jump" between the system launch screen and your SwiftUI splash screen, they must be visually identical.
-
-1.  **Inspect Launch Screen:** Check `Info.plist` for `UILaunchScreen` or look at `LaunchScreen.storyboard` to find the background color and image name.
-2.  **Match in SwiftUI:** In `SplashScreen.swift`, use the exact same background color and image asset. Ensure the image size and position are identical to the launch screen's layout. This creates a smooth, professional loading experience.
-
-**Verification:** See [Verification Checklists](guides/verification-checklists.md#step-2-add-app-and-empty-splashscreen).
-
----
-
-## Step 3: Implement Data Migration & Loading
-**Purpose:** Move all app initialization, data migration, and heavy loading into the `SplashScreen`.
-
-**Tasks:**
-1.  Identify initialization code in `AppDelegate` (e.g., database setup, migrations).
-2.  If migrating from Core Data to Swift Data, create Swift Data models and set up the `.modelContainer` in `App.swift`.
-3.  Create a `DataMigrationManager` to handle data porting. (Sample: `guides/samples/step3-data-migration/DataMigrationManager.swift`)
-4.  Create an `AppInitializer` to centralize all setup tasks. (Sample: `guides/samples/step3-data-migration/AppInitializer.swift`)
-5.  Update `SplashScreen` to use `AppInitializer` and display progress. (Sample: `guides/samples/step3-data-migration/SplashScreenWithMigration.swift`)
-
-**Verification:** See [Verification Checklists](guides/verification-checklists.md#step-3-implement-data-migration--loading-process).
-
----
-
-## Step 4: Create First Screen from Root ViewController
-**Purpose:** Migrate the root `ViewController` to a SwiftUI `View`.
-
-**Tasks:**
-1.  Identify the root `ViewController` in your `AppDelegate` or `SceneDelegate`.
-2.  Create a corresponding SwiftUI `View` (e.g., `MainViewController` -> `MainScreen.swift`). **Do not use `ContentView.swift`.**
-3.  Implement the screen's UI and state management in SwiftUI. (Sample: `guides/samples/step4-first-screen/MainScreen.swift`)
-4.  In `App.swift`, update the view hierarchy to show `MainScreen` after the splash screen finishes.
-
-**Verification:** See [Verification Checklists](guides/verification-checklists.md#step-4-create-first-screen-from-root-viewcontroller).
-
----
-
-## Step 5: Verify First Screen
-**Purpose:** Ensure the splash-to-main-screen transition works correctly.
-
-**Tasks:**
-1.  Build and run the app (`tuist build` or Cmd+R).
-2.  Confirm the splash screen appears, initialization runs, and the main screen is displayed without errors.
-
-**Verification:** See [Verification Checklists](guides/verification-checklists.md#step-5-verify-first-screen-appears-after-splash).
-
----
-
-## Step 6: Implement Features Incrementally
-**Purpose:** Migrate features from the `ViewController` to the new SwiftUI `Screen`, one by one.
-
-**Tasks:**
-1.  Choose a simple feature from the original `ViewController`.
-2.  Implement its equivalent in SwiftUI, referencing the original UIKit code.
-3.  Use common migration patterns (e.g., `UITableView` -> `List`, `UINavigationController` -> `NavigationLink`, `Delegates` -> `Closures`). See samples in `guides/samples/step6-migration-patterns/`.
-4.  If a UIKit view is too complex to rewrite, wrap it using `UIViewRepresentable`.
-5.  Test each feature after migration before starting the next.
-
-**Verification:** See [Verification Checklists](guides/verification-checklists.md#step-6-implement-features-in-the-first-screen-one-by-one).
-
----
-
-## Step 7: Repeat for Next Screen
-**Purpose:** Continue the migration process for all remaining screens.
-
-**Tasks:**
-1.  Choose the next `ViewController` to migrate.
-2.  Repeat **Steps 4-6** for this screen.
-3.  Implement navigation between screens using SwiftUI patterns like `NavigationLink`, `.sheet`, and `TabView`. (Sample: `guides/samples/step7-navigation-patterns/NavigationExamples.swift`)
-4.  Track your progress with a checklist of all screens.
-
-**Verification:** See [Verification Checklists](guides/verification-checklists.md#step-7-pick-next-screen--repeat-step-4-6).
-
----
-
-## Step 8: Migrate AdMob
-**Purpose:** Integrate AdMob after all app features are functional in SwiftUI.
-
-**Tasks:**
-- Follow the detailed instructions in the **AdMob Sub-Guide**: `guides/admob-migration.md`.
-
-**Verification:** See [Verification Checklists](guides/verification-checklists.md#step-8-migrate-admob-after-all-features-implemented).
-
----
-
-## Step 9: Cleanup
-**Purpose:** Remove legacy UIKit code after the SwiftUI migration is complete and verified.
-
-**Tasks:**
-1.  Create a backup branch of your UIKit code (`git checkout -b backup-uikit-code`).
-2.  Delete the migrated `ViewController` files and storyboards.
-3.  Clean up any remaining UIKit-specific code from your `AppDelegate`.
-4.  Run `mise x -- tuist generate --no-open && tuist build` and perform a final, full-app test.
-
-**Verification:** See [Verification Checklists](guides/verification-checklists.md#step-9-keep-all-viewcontrollers-until-migration-done).
+1. Detect the current migration stage.
+2. Route to the appropriate specialized subskill.
+3. Complete that stage and verify it before moving on.
+4. Repeat until all screens and supporting systems are migrated.
+5. Run cleanup only after the full SwiftUI app is stable.
