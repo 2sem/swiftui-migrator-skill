@@ -1,13 +1,13 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-This repository is a documentation-first skill for incremental UIKit to SwiftUI migration. The installable skill payload lives in `skills/swiftuimigrator/`, with the main workflow in `skills/swiftuimigrator/SKILL.md`. Contributor-facing overview and install instructions live in `README.md`. Detailed reference material is under `skills/swiftuimigrator/guides/`, including `verification-checklists.md`, `troubleshooting.md`, and `common-pitfalls.md`. Swift sample code is split by purpose:
+This repository is a documentation-first skill suite for incremental UIKit to SwiftUI migration. `skills/swiftuimigrator/` is the orchestrator skill. Stage-specific execution lives in sibling skill directories such as `skills/swiftuimigrator-project-setup/`, `skills/swiftuimigrator-data-migration/`, `skills/swiftuimigrator-screens/`, `skills/swiftuimigrator-admob/`, and `skills/swiftuimigrator-cleanup/`. Contributor-facing overview and install instructions live in `README.md`. Shared reference material remains under `skills/swiftuimigrator/guides/`, and shared Swift sample code remains under `skills/swiftuimigrator/samples/`.
 
 - `skills/swiftuimigrator/guides/samples/step*/` for step-specific migration examples
 - `skills/swiftuimigrator/samples/general/` for reusable SwiftUI migration patterns
 - `skills/swiftuimigrator/samples/admob/` for AdMob-specific integration samples
 
-Keep new guides close to the workflow step they support, and group new Swift examples by feature or migration stage.
+Prefer editing the smallest applicable subskill. Keep shared guides and samples under the orchestrator skill unless duplication is clearly justified.
 
 ## Build, Test, and Development Commands
 There is no root build target for this repository itself; contributors mainly edit Markdown and Swift reference files. Use these commands to validate content and examples:
