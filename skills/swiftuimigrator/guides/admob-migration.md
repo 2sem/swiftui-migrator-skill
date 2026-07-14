@@ -1,8 +1,8 @@
 # swiftuimigrator
 
-**Description**: Migrates UIKit AdMob integration to SwiftUI, including ad managers, user defaults, and screen-level ad presentation logic.
+**Description**: Migrates UIKit AdMob integration to SwiftUI, including ad managers, user defaults, interstitial/opening ads, banner ads, native ads, and screen-level ad presentation logic.
 
-**When to use**: When migrating a UIKit screen with Google AdMob interstitial or opening ads to SwiftUI.
+**When to use**: When migrating a UIKit screen with Google AdMob interstitial, opening, banner, or native ads to SwiftUI.
 
 **Prerequisites**: Requires existing UIKit AdMob implementation and GADManager package.
 
@@ -66,12 +66,17 @@ Refer to `LSDefaults.swift` in Samples for structure reference
     - Add Static Computed `LastOpeningAdPrepared` Property
     - Note: If the project also needs `LastFullADShown`, add it here following the existing pattern
 
+4. **Check User Defaults for Ad-Free State**:
+    - Purpose: Ensure banner/native/interstitial placements can be skipped for paid or rewarded ad-free users
+    - Result: The project has an `isAdFree` flag or equivalent entitlement check
+    - If no ad-free state exists, document that ads are always eligible and do not invent purchase behavior
+
 ## Create AdManager for SwiftUI
 
 **Important**: The sample code uses `LSDefaults` as the UserDefaults wrapper class name. Replace all instances of `LSDefaults` with your project's actual defaults class name (e.g., `AppDefaults`, `UserDefaults`, etc.) found in the previous section.
 
 1. **Create SwiftUIAdManager**:
-    - Purpose: Create AdManager for SwiftUI 
+    - Purpose: Create AdManager for SwiftUI
     - Result: `SwiftUIAdManager` class exists
     - Create `Projects/App/Sources/Managers/SwiftUIAdManager.swift`
     - Copy the content from `samples/admob/SwiftUIAdManager.swift`
@@ -84,11 +89,23 @@ Refer to `LSDefaults.swift` in Samples for structure reference
     - Add Methods to implement `GADManagerDelegate` from `Projects/App/Sources/AppDelegate.swift`
     - **Note**: When copying the methods from `AppDelegate`, you will likely need to update the `prepare` method call to match the `GADManager` 1.3.8+ signature. The `isTest` parameter is renamed to `isTesting`. See the "Common Pitfalls" section for a detailed example of the correct implementation.
 
+3. **Add Banner Helper if Banner Units Exist**:
+    - Purpose: Create SwiftUI-compatible banner views through GADManager
+    - Result: `SwiftUIAdManager` has a banner factory method
+    - Add this method when the project has banner units such as `HomeBanner` or `SettingsBanner`:
+      ```swift
+      func createBannerAdView(withAdSize size: AdSize, forUnit unit: GADUnitName) -> BannerView? {
+          gadManager?.prepare(bannerUnit: unit, isTesting: self.isTesting(unit: unit), size: size)
+      }
+      ```
+    - If the app has an ad-free state, return `nil` before preparing the banner when the user is ad-free
+
 ### Verification
 After completing this section, verify:
 - [ ] `SwiftUIAdManager.swift` compiles without errors
 - [ ] Class conforms to `GADManagerDelegate` protocol
 - [ ] All delegate methods are implemented
+- [ ] Banner helper exists when banner units are present
 
 ## Migrate Google Ad Unit Names for SwiftUI
 
@@ -104,6 +121,7 @@ After completing this section, verify:
 - [ ] `GADUnitName.swift` compiles without errors
 - [ ] All ad units from `GADUnitIdentifiers` are represented as enum cases
 - [ ] `testUnits` array contains all cases for DEBUG builds
+- [ ] Banner unit enum cases use placement-specific names when IDs differ, such as `.homeBanner` and `.settingsBanner`
 
 ## Migrate Admob Manager Intialization
 
@@ -139,6 +157,67 @@ After completing this section, verify:
 - [ ] GoogleMobileAds framework is imported
 - [ ] AdManager is initialized and passed as environmentObject
 - [ ] App builds successfully with `tuist build`
+
+## Migrate Banner Ad
+
+Use this section when the UIKit app has `GADBannerView`, `BannerView`, storyboard banner outlets, or screen footer banner placements.
+
+1. **Find Banner Placements**
+    - Purpose: Preserve where each banner appears and which ad unit it uses
+    - Search for `GADBannerView`, `BannerView`, `banner`, `AdSizeBanner`, `prepare(bannerUnit:)`, and storyboard/XIB banner outlets
+    - Record each placement, for example home footer or settings footer
+
+2. **Add Banner Unit Names**
+    - Purpose: Map each production banner ID into SwiftUI-safe enum cases
+    - Result: `GADUnitIdentifiers` and `GADUnitName` contain all banner units
+    - Example `Project.swift` entries:
+      ```swift
+      "GADUnitIdentifiers": [
+          "HomeBanner": "ca-app-pub-xxx/home-banner",
+          "SettingsBanner": "ca-app-pub-xxx/settings-banner"
+      ]
+      ```
+    - Example enum cases:
+      ```swift
+      case homeBanner = "HomeBanner"
+      case settingsBanner = "SettingsBanner"
+      ```
+
+3. **Add BannerAdView**
+    - Purpose: Wrap `GoogleMobileAds.BannerView` for SwiftUI
+    - Result: `Views/BannerAdView.swift` exists
+    - Create `Projects/App/Sources/Views/BannerAdView.swift`
+    - Use `samples/admob/BannerAdView.swift` as a reference
+    - The view should:
+      - Read `SwiftUIAdManager` from `@EnvironmentObject`
+      - Load only after `adManager.isReady`
+      - Use a coordinator with `hasLoaded` to prevent duplicate loads
+      - Wrap `BannerView` with `UIViewRepresentable`
+      - Use `.frame(height: 50)` for `AdSizeBanner`
+      - Return zero-height clear content while no banner view is available
+
+4. **Place BannerAdView in Screens**
+    - Purpose: Restore banner placement without disturbing migrated SwiftUI layout
+    - Result: Screens show banners in the intended location
+    - Example fixed footer placement:
+      ```swift
+      VStack(spacing: 0) {
+          mainContent
+          BannerAdView(unitName: .homeBanner)
+      }
+      ```
+    - Keep fixed footer banners outside `ScrollView` / `List` unless the original UIKit banner scrolled with content
+    - Use the correct placement-specific unit, for example `.homeBanner` on the home screen and `.settingsBanner` on settings
+
+### Verification
+After completing this section, verify:
+- [ ] `BannerAdView.swift` compiles without errors
+- [ ] `BannerAdView` receives `SwiftUIAdManager` from the WindowGroup environment
+- [ ] Banner loads only after `adManager.isReady`
+- [ ] Banner requests are not duplicated on SwiftUI body refreshes
+- [ ] Banner uses the correct unit for each screen placement
+- [ ] Ad-free users do not receive banner requests
+- [ ] No blank 50pt gap remains when a banner is unavailable
 
 ## Migrate Native Ad
 
@@ -210,7 +289,7 @@ When implementing `SwiftUIAdManager.swift`, even when using the sample file, mis
 
 - **`GADManager` Initialization:**
     - **Incorrect:** `manager = GADManager<GADUnitName>(testingUnits: testUnits)`
-    - **Correct:** 
+    - **Correct:**
         ```swift
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let window = windowScene.windows.first else { return }

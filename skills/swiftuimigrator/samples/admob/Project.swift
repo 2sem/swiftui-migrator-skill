@@ -71,6 +71,13 @@ let skAdNetworks: [Plist.Value] = [
             infoPlist: .extendingDefault(
                 with: [
                     ...,
+                    "GADUnitIdentifiers": [
+                        "FullAd": "ca-app-pub-xxx/full",
+                        "Launch": "ca-app-pub-xxx/launch",
+                        "Native": "ca-app-pub-xxx/native",
+                        "HomeBanner": "ca-app-pub-xxx/home-banner",
+                        "SettingsBanner": "ca-app-pub-xxx/settings-banner",
+                    ],
                     "SKAdNetworkItems": .array(skAdNetworks),
                 ]
     )

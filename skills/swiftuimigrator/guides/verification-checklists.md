@@ -79,6 +79,9 @@ This document provides checklists to verify the successful completion of each st
 - [ ] AdMob sub-guide completed
 - [ ] Interstitial ads working
 - [ ] Opening ads working
+- [ ] Banner ads working on each intended placement
+- [ ] Banner ads use placement-specific ad units
+- [ ] Banner ads do not leave blank spacing when unavailable
 - [ ] Launch count logic working
 - [ ] No ad-related crashes
 

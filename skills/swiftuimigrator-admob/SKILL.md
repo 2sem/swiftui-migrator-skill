@@ -1,6 +1,6 @@
 ---
 name: swiftuimigrator-admob
-description: Use when the SwiftUI migration is already stable and the remaining work is Google AdMob integration, SwiftUIAdManager setup, GADManager ad-unit migration, opening/interstitial/rewarded/native ads, or native ad UI migration.
+description: Use when the SwiftUI migration is already stable and the remaining work is Google AdMob integration, SwiftUIAdManager setup, GADManager ad-unit migration, opening/interstitial/rewarded/banner/native ads, or native ad UI migration.
 ---
 
 # SwiftUI Migrator AdMob
@@ -15,7 +15,7 @@ Core principle: AdMob is a late-stage migration concern. Keep ads out of the cri
 
 - Core setup and screen migration are already working
 - The remaining migration work is specific to Google AdMob / GADManager
-- `SwiftUIAdManager`, ad-unit names, app-open ads, interstitial ads, rewarded ads, or native ad views need SwiftUI equivalents
+- `SwiftUIAdManager`, ad-unit names, app-open ads, interstitial ads, rewarded ads, banner ads, or native ad views need SwiftUI equivalents
 - Legacy UIKit AdMob wiring in `AppDelegate`, `SceneDelegate`, table/collection cells, or view controllers needs cleanup after SwiftUI parity
 
 ## Preconditions
@@ -33,6 +33,7 @@ Core principle: AdMob is a late-stage migration concern. Keep ads out of the cri
 - App lifecycle wiring for Mobile Ads startup and app-open ads
 - Screen-level interstitial presentation
 - Rewarded ad actions such as temporary ad-free activation
+- Banner ad loading and fixed-height SwiftUI placement
 - Native ad loading and SwiftUI row rendering
 - Cleanup of obsolete legacy AdMob logic only after verification
 
@@ -43,7 +44,7 @@ The SendAdv app currently uses this shape and should be treated as the preferred
 - `Projects/App/Project.swift`
   - Adds `GADManager` package (`https://github.com/2sem/GADManager`, currently 1.4.x-compatible)
   - Defines `GADApplicationIdentifier`
-  - Defines `GADUnitIdentifiers` for production units, e.g. `FullAd`, `Launch`, `Native`
+  - Defines `GADUnitIdentifiers` for production units, e.g. `FullAd`, `Launch`, `Native`, `HomeBanner`, `SettingsBanner`
   - Adds `SKAdNetworkItems`
   - Adds `NSUserTrackingUsageDescription`
 - `Projects/App/Sources/App.swift`
@@ -57,13 +58,20 @@ The SendAdv app currently uses this shape and should be treated as the preferred
   - Uses `scenePhase` to show launch/opening ads only after returning from background
 - `SwiftUIAdManager`
   - Is `NSObject, ObservableObject`
-  - Defines ad-unit enum cases matching Info.plist keys (`FullAd`, `Launch`, `Native`, optional `RewardAd`)
+  - Defines ad-unit enum cases matching Info.plist keys (`FullAd`, `Launch`, `Native`, optional `RewardAd`, optional banner units such as `HomeBanner` / `SettingsBanner`)
   - Keeps `testUnits` populated in DEBUG and empty in RELEASE
   - Creates `GADManager<GADUnitName>` with a `UIWindow`
   - Publishes `isReady` so native ads can load after setup
   - Provides async `show(unit:) -> Bool`
   - Guards ad presentation and native loading with the app's ad-free flag (for example `LSDefaults.isAdFree`)
   - Implements `GADManagerDelegate` by reading/writing last prepared and last shown timestamps
+- Banner ads
+  - Add `SwiftUIAdManager.createBannerAdView(withAdSize:forUnit:) -> BannerView?`
+  - Prepare through `gadManager.prepare(bannerUnit:isTesting:size:)`
+  - Wrap `GoogleMobileAds.BannerView` with `UIViewRepresentable`
+  - Load only after `adManager.isReady`; keep a `hasLoaded` guard to avoid duplicate requests
+  - Use distinct banner units for placements when production IDs differ, such as `.homeBanner` and `.settingsBanner`
+  - Reserve layout space only when the banner view exists, commonly `.frame(height: 50)` for `AdSizeBanner`
 - Screen integration
   - Reads launch count with `@AppStorage("LaunchCount")`
   - Wraps paid/critical completion actions in `presentFullAdThen { ... }`
@@ -85,7 +93,7 @@ The SendAdv app currently uses this shape and should be treated as the preferred
 
 1. Find all AdMob entry points: `AppDelegate`, `SceneDelegate`, `*ViewController`, ad table/collection cells, `GADManager`, `GoogleMobileAds`, `NativeAdView`, and rewarded managers.
 2. Record the original behavior before editing:
-   - Which units exist: full/interstitial, launch/opening, native, rewarded
+   - Which units exist: full/interstitial, launch/opening, native, rewarded, banner
    - Which counters gate ads: launch count, last shown time, last prepared time, ad-free purchase/reward state
    - Which flows trigger ads: app foreground, message/send completion, list rows, reward button
 3. Do not delete UIKit ad code until SwiftUI behavior is verified.
@@ -129,6 +137,7 @@ Rules:
    - `prepare(interstitialUnit:interval:)`
    - `prepare(openingUnit:interval:)`
    - `prepare(rewardUnit:)` when reward units are configured
+   - `createBannerAdView(withAdSize:forUnit:) -> BannerView?` when banner units are configured
    - `show(unit:) async -> Bool`
    - `showRewarded(completion:)` when rewarded ads are configured
    - `createAdLoader(forUnit:) -> AdLoader?`
@@ -184,7 +193,28 @@ Guidelines:
 4. Verify a matching reward ad unit exists in configuration before enabling the UI.
 5. Remove old `GADRewardManager` only after no SwiftUI or UIKit call sites use it.
 
-### 8. Migrate native ads
+### 8. Migrate banner ads
+
+Use banner migration for persistent, inline placements such as a home screen footer or settings footer.
+
+1. Add banner ad unit keys to `GADUnitIdentifiers`, for example `HomeBanner` and `SettingsBanner`.
+2. Add matching `GADUnitName` enum cases, for example `.homeBanner = "HomeBanner"` and `.settingsBanner = "SettingsBanner"`.
+3. Add a manager helper:
+
+```swift
+func createBannerAdView(withAdSize size: AdSize, forUnit unit: GADUnitName) -> BannerView? {
+	gadManager?.prepare(bannerUnit: unit, isTesting: self.isTesting(unit: unit), size: size)
+}
+```
+
+4. Create `BannerAdView` with an `@EnvironmentObject` `SwiftUIAdManager`, a coordinator conforming to `BannerViewDelegate`, and a `UIViewRepresentable` wrapper around `BannerView`.
+5. In the coordinator, guard with `hasLoaded` and call `banner.load(Request())` only once after `adManager.isReady` becomes true.
+6. Place `BannerAdView(unitName: .homeBanner)` or the appropriate placement-specific unit near the bottom of the SwiftUI screen.
+7. Keep the banner outside scrollable content unless the original UIKit placement was intentionally part of the scrolling list.
+8. For fixed banners using `AdSizeBanner`, reserve `50` points of height only when the `BannerView` exists; otherwise return `Color.clear.frame(height: 0)` to avoid empty ad gaps.
+9. Do not show banner ads for ad-free users; return nil/no banner from the manager or skip the `BannerAdView` at the call site.
+
+### 9. Migrate native ads
 
 1. Create `MediaViewSwiftUIView` using `UIViewRepresentable` around `GoogleMobileAds.MediaView`.
 2. Create `NativeAdSwiftUIView` with a coordinator that conforms to `AdLoaderDelegate` and `NativeAdLoaderDelegate`.
@@ -197,7 +227,7 @@ Guidelines:
    - Real ad loaded: let `NativeAdView` receive ad interactions
    - No real ad: let fallback SwiftUI content receive taps
 
-### 9. Clean up legacy ad wiring
+### 10. Clean up legacy ad wiring
 
 Only after SwiftUI ads are verified:
 
@@ -223,6 +253,7 @@ Only after SwiftUI ads are verified:
 - App-open/launch ad appears only after returning from background if that is the intended behavior
 - Interstitial wrapper runs the underlying action even when ad loading/showing fails
 - Rewarded ad success updates the intended entitlement only after the reward callback
+- Banner ads load after `adManager.isReady`, use the intended placement-specific unit, and do not leave blank spacing when unavailable
 - Native ads load after `adManager.isReady` and render with the required `Ad` badge
 - Legacy ad logic can be removed without regressions
 
